@@ -13,25 +13,10 @@
 using namespace std;
 using namespace cv;
 
-VideoCapture createInput(bool useCamera, std::string videoPath)
-{
-	VideoCapture capVideo;
-	if (useCamera) { capVideo.open(0); }
-	else { capVideo.open(videoPath); }
-	return capVideo;
-}
+
 int main()
 {
-	bool useCamera = USE_CAMERA;
-	std::string videoPath = VIDEO_PATH;
 
-	VideoCapture cap = createInput(useCamera, videoPath);
-
-	if (!cap.isOpened())
-	{
-		std::cout << "fail to open video...\n" << std::endl;
-		return -1;
-	}
 
 	Mat frame;
 	Mat tempMat;
@@ -44,7 +29,6 @@ int main()
 		int cnt = 0;
 	while (1) {
 
-		cap >> frame;
 		if (frame.empty())break;
 
 		if (cnt == 0) {
