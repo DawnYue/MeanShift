@@ -9,7 +9,7 @@
 
 #include <features2d/features2d.hpp>
 #include <opencv2/video/tracking.hpp>
-//课前准备
+//练习2
 //https ://blog.csdn.net/lwx309025167/article/details/78434930
 using namespace std;
 using namespace cv;
