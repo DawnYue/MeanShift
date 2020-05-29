@@ -6,34 +6,65 @@
 #include <core/core.hpp>
 #include <imgproc/imgproc.hpp>
 #include <highgui/highgui.hpp>
-
 #include <features2d/features2d.hpp>
 #include <opencv2/video/tracking.hpp>
-//课前准备
-//https ://blog.csdn.net/lwx309025167/article/details/78434930
+//练习1
 using namespace std;
 using namespace cv;
-//https://blog.csdn.net/qq_41007606/article/details/81870607
-void main()
+int main()
 {
-	//步骤一：读取图片
-	cv::Mat img1 = cv::imread("E:\\1\\1.png");
-	cv::Mat img2 = cv::imread("E:\\1\\1.png");
+
+	cv::Mat mat_gray;
+	cv::Mat mat_binary;
+	cv::Mat mat_canny;
+	cv::Mat srcImage = imread("E:\\13\\img.png");
+
+	cvtColor(srcImage, mat_gray, COLOR_BGR2GRAY);//转化边缘检测后的图为灰度图
+	//形态学闭运算
+	cv::Mat elementRect;
+	elementRect = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(-1, -1));
+	cv::morphologyEx(mat_gray, mat_gray, cv::MORPH_CLOSE, elementRect);
+
+	// binary
+	cv::threshold(mat_gray, mat_binary, 125, 255.0, cv::THRESH_BINARY);
+	// detect edge
+	cv::Canny(mat_binary, mat_canny, 50, 125, 3);
+
+	// detect line
+	std::vector<cv::Vec4i> lines;
+	cv::HoughLinesP(mat_canny, lines, 1, CV_PI / 180, 35, 10, 10);
+
+	// draw line
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		cv::Vec4i linex = lines[i];
+		line(srcImage, cv::Point(linex[0], linex[1]), cv::Point(linex[2], linex[3]), cv::Scalar(0, 0, 255), 1, CV_AA);
+	}
+
+
+	cv::imshow("canny", mat_canny);
+	cv::imshow("mat", srcImage);
+	cv::waitKey(0);
+
+	return 0;
+	/*/读取图片
+	cv::Mat img1 = cv::imread("E:\\13\\img.png");
+	cv::Mat img2 = cv::imread("E:\\13\\template.png");
 	cv::imshow("【被查找的图像】", img1);
 	cv::imshow("【模版图像】", img2);
 
-	//步骤二：创建一个空画布用来绘制匹配结果
+	//创建空画布绘制匹配结果
 	cv::Mat dstImg;
 	dstImg.create(img1.dims, img1.size, img1.type());
 	cv::imshow("createImg", dstImg);
 
-	//步骤三：匹配，最后一个参数为匹配方式，共有6种，详细请查阅函数介绍
+	//匹配
 	cv::matchTemplate(img1, img2, dstImg, 0);
 
-	//步骤四：归一化图像矩阵，可省略
+	//归一化图像矩阵，可省略
 	cv::normalize(dstImg, dstImg, 0, 1, 32);
 
-	//步骤五：获取最大或最小匹配系数
+	//获取最大或最小匹配系数
 	//首先是从得到的 输出矩阵中得到 最大或最小值（平方差匹配方式是越小越好，所以在这种方式下，找到最小位置）
 	//找矩阵的最小位置的函数是 minMaxLoc函数
 	cv::Point minPoint;
@@ -42,12 +73,12 @@ void main()
 	double *maxVal = 0;
 	cv::minMaxLoc(dstImg, minVal, maxVal, &minPoint, &maxPoint);
 
-	//步骤六：开始正式绘制
+	//开始绘制
 	cv::rectangle(img1, minPoint, cv::Point(minPoint.x + img2.cols, minPoint.y + img2.rows), cv::Scalar(0, 255, 0), 2, 8);
 	cv::imshow("【匹配后的图像】", img1);
 	cv::rectangle(dstImg, minPoint, cv::Point(minPoint.x + img2.cols, minPoint.y + img2.rows), cv::Scalar(0, 0, 0), 3, 8);
 	cv::imshow("【匹配后的计算过程图像】", dstImg);
-	cv::waitKey(0);
+	cv::waitKey(0);*/
 }
 /*
 Mat src, dst;
