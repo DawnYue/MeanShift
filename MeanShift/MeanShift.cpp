@@ -6,51 +6,21 @@
 
 using namespace cv;
 using namespace std;
+	
 
-void myharris(Mat & src, float * hist);
-
-int main()
-{
-	int bins = 1000000;
-	Mat src = imread("E:\\13\\hogTemplate.png");
-	Mat src1 = imread("E:\\13\\img.png");
-
-	float * ref_hist = new float[bins];
-	memset(ref_hist, 0, sizeof(float)*bins);
-
-	float * ref_hist1 = new float[bins];
-	memset(ref_hist1, 0, sizeof(float)*bins);
-
-	float * ref_hist2 = new float[bins];
-	memset(ref_hist2, 0, sizeof(float)*bins);
-
-	myharris(src, ref_hist);
-	myharris(src1, ref_hist1);
+int main(){
+	Mat cell = imread("E:\\13\\template.png");
+	Mat src = imread("E:\\13\\img.png");
+	float  ref_hist[1000000] = {0};
 
 
-	float sum1 = 0;
-	for (int i = 0; i < bins; i++) {
-		sum1 += (ref_hist[i] - ref_hist1[i])*(ref_hist[i] - ref_hist1[i]);
-	}
-	sum1 = sqrt(sum1);
-	cout << sum1 << endl;
-
-
-	delete[] ref_hist;
-	delete[] ref_hist1;
-	delete[] ref_hist2;
-	waitKey();
-	return 0;
-}
-
-void myharris(Mat & src, float * ref_hist) {
 	Mat gray;
 	cvtColor(src, gray, CV_BGR2GRAY);
+	cvtColor(cell, cell, CV_BGR2GRAY);
 
-	int cellSize = 16;
 	float scale = 360 / 8;
-	int nX = gray.cols / cellSize;
-	int nY = gray.rows / cellSize;
+	int nX = gray.cols / cell.cols;
+	int nY = gray.rows / cell.rows;
 
 	Mat gx, gy;
 	Mat mag, angle;
@@ -58,6 +28,16 @@ void myharris(Mat & src, float * ref_hist) {
 	cv::Sobel(gray, gy, CV_32F, 0, 1, 1);
 	cartToPolar(gx, gy, mag, angle, true);
 
+	//draw rectangle  
+	cv::Rect rect;
+
+	rect.height = cell.cols;
+	rect.width = cell.rows;
+
+	int ref1 = 0;
+	int ref2 = 0;
+	int hog1 = 0;
+	int hog2 = 0;
 	int c = 0;
 	//遍历所有
 	for (int a = 0; ((a - 1)*nY) <= gray.rows; a++) {
@@ -74,20 +54,35 @@ void myharris(Mat & src, float * ref_hist) {
 
 					float data_mag = mag_ptr[0]; // data为I(x,y)第0个通道的值    	梯度
 					float data_angle = angle_ptr[0]; // data为I(x,y)第0个通道的值   角度
-
+					ref2 = ref1;
+					hog2 = hog1;
 					for (int i = 0; i <= 8; i++)
 					{
 						if (data_angle <= (i*scale))
 						{
 							int d = i + c;
 							ref_hist[d] = ref_hist[d] + data_mag;//遍历像素
+							ref1 = ref1+ref_hist[d];
 							//cout << "histgram" << ref_hist[d] << endl;
 						}
-					}
+					}							
 				}
 			}
+			hog1 = ref1 - ref2;
 
+			if (hog1 <= hog2) {
+			rect.x = a;
+			rect.y = b;
+			}	
 			c = c + 8;
 		}
 	}
+
+
+
+	rectangle(src, rect, CV_RGB(255, 0, 0), 1, 8, 0);
+	imshow("src", src);
+	waitKey(0);//等待用户按键
+	return 0;
+
 }
