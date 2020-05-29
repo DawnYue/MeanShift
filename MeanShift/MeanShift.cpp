@@ -13,36 +13,28 @@
 using namespace std;
 using namespace cv;
 
-
 int main()
 {
 
-
-	Mat frame;
+	cv::Mat img1 = cv::imread("E:\\13\\img.png");
 	Mat tempMat;
 	Mat resultMat;
-	Mat refMat;
 	Mat dispMat;
+	int cnt = 0;
 
-	TemplateMatchModes
-
-		int cnt = 0;
-	while (1) {
-
-		if (frame.empty())break;
-
+	/*/在被查找的图像中选择模板
+    Mat refMat;
 		if (cnt == 0) {
 			Rect2d r;
-			r = selectROI(frame, true);
-			tempMat = frame(r);
+			r = selectROI(img1, true);
+			tempMat = img1(r);
 			tempMat.copyTo(refMat);
-			destroyAllWindows();
-		}
-
-
+			destroyAllWindows();}
+*/
+		cv::Mat refMat = cv::imread("E:\\13\\template.png");
 
 		int match_method = 0;
-		matchTemplate(frame, refMat, resultMat, match_method);
+		matchTemplate(img1, refMat, resultMat, match_method);
 
 		normalize(resultMat, resultMat, 0, 1, NORM_MINMAX, -1, Mat());
 
@@ -60,16 +52,12 @@ int main()
 			matchLoc = maxLoc;
 		}
 
-		frame.copyTo(dispMat);
+		img1.copyTo(dispMat);
 		rectangle(dispMat, matchLoc, Point(matchLoc.x + refMat.cols, matchLoc.y + refMat.rows), Scalar::all(0), 2, 8, 0);
 
-
-		cnt++;
 		imshow("template", refMat);
 		imshow("dispMat", dispMat);
-		waitKey(30);
-
-	}
+		waitKey(0);
 
 	return 0;
 }
