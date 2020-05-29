@@ -30,20 +30,24 @@ int templateMatching_demo()
 	Mat refMat;
 	Mat dispMat;
 	int cnt = 0;
-	while (1) {
-
+	while (1) {//延时，否则黑屏
 		cap >> frame;
 		if (frame.empty())break;
-		//if (cnt == 0) { waitKey(10); }
-			if (cnt == 0) {
+		if (cnt == 10) {
 			Rect2d r;
 			r = selectROI(frame, true);
 			tempMat = frame(r);
 			tempMat.copyTo(refMat);
 			destroyAllWindows();
+			break;
 		}
+		cnt++;
+		waitKey(30);
+	}
+	while (1) {
 
-
+		cap >> frame;
+		
 
 		int match_method = 0;
 		matchTemplate(frame, refMat, resultMat, match_method);
@@ -67,16 +71,14 @@ int templateMatching_demo()
 		frame.copyTo(dispMat);
 		rectangle(dispMat, matchLoc, Point(matchLoc.x + refMat.cols, matchLoc.y + refMat.rows), Scalar::all(0), 2, 8, 0);
 
-
 		cnt++;
 		imshow("template", refMat);
 		imshow("dispMat", dispMat);
 		waitKey(30);
-
 	}
-
 	return 0;
 }
+
 int img()
 {
 	cv::Mat img1 = cv::imread("E:\\13\\img.png");
