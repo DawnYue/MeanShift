@@ -17,7 +17,7 @@ int main(){
 	int nX = cell.cols / cellSize;
 	int nY = cell.rows / cellSize;
 	int bins = 8 * nX*nY;
-	int reCode = 0;
+
 	while (1)
 	{
 		float *template_hist = new float[bins];
