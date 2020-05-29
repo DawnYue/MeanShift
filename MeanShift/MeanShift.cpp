@@ -22,7 +22,6 @@ int main()
 	//创建空画布绘制匹配结果
 	cv::Mat dstImg;
 	dstImg.create(img1.dims, img1.size, img1.type());
-	cv::imshow("createImg", dstImg);
 
 	//匹配
 	cv::matchTemplate(img1, img2, dstImg, 0);
@@ -41,7 +40,6 @@ int main()
 	//开始绘制
 	cv::rectangle(img1, minPoint, cv::Point(minPoint.x + img2.cols, minPoint.y + img2.rows), cv::Scalar(0, 255, 0), 2, 8);
 	cv::imshow("【匹配后的图像】", img1);
-	cv::rectangle(dstImg, minPoint, cv::Point(minPoint.x + img2.cols, minPoint.y + img2.rows), cv::Scalar(0, 0, 0), 3, 8);
-	cv::imshow("【匹配后的计算过程图像】", dstImg);
 	cv::waitKey(0);
+	return 0;
 }
