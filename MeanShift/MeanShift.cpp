@@ -1,26 +1,78 @@
-﻿//练习1
-#include<opencv2/opencv.hpp>
+﻿#include<opencv2/opencv.hpp>
 #include<iostream>
 #include<math.h>
 #include <vector>
 
 using namespace cv;
 using namespace std;
-	
+//练习1	
+void myharris(Mat & src, int nX, int nY, float * hist);
 
 int main(){
-	Mat cell = imread("E:\\13\\template.png");
+	Mat cell = imread("E:\\13\\template.png",0);
 	Mat src = imread("E:\\13\\img.png");
-	float  ref_hist[1000000] = {0};
+	Mat comp;
+	Mat gray=imread("E:\\13\\img.png",0);
+    int cellSize = 16;
+	int nX = cell.cols / cellSize;
+	int nY = cell.rows / cellSize;
+	int bins = 8 * nX*nY;
+	int reCode = 0;
+	while (1)
+	{
+		float *template_hist = new float[bins];
+		memset(template_hist, 0, sizeof(float)*bins);
+
+		myharris(cell, nX, nY, template_hist);//模板hog
+
+		float distanceMin;
+		Rect dstRect;
+
+		for (int j = 0; j < src.rows - cell.rows; j++)
+		{
+			for (int i = 0; i < src.cols - cell.cols; i++)
+			{
+				Rect rect(i, j, cell.cols, cell.rows);
+				comp = Mat(src, rect);	//切割
+
+				float *compare_hist = new float[bins];
+				memset(compare_hist, 0, sizeof(float)*bins);
+
+				myharris(comp, nX, nY, compare_hist);//hog
+
+				float distance = 0;
+				for (int k = 0; k < bins; k++)
+				{
+					distance += pow(template_hist[k] - compare_hist[k], 2);
+				}
+				distance = sqrt(distance);
+				if (j == 0) {
+					distanceMin = distance;
+				}
+				else if (distance < distanceMin) {
+					distanceMin = distance;
+					dstRect = rect;
+				}
+
+				delete[] compare_hist;
+
+			}
+		}
+
+		rectangle(src, dstRect, Scalar(0, 0, 255));
+
+		cv::imshow("template", cell);
+		cv::imshow("src", src);
+
+		delete[] template_hist;
+
+		waitKey(0);
+	}
+	return 0;
+}
 
 
-	Mat gray;
-	cvtColor(src, gray, CV_BGR2GRAY);
-	cvtColor(cell, cell, CV_BGR2GRAY);
-
-	float scale = 360 / 8;
-	int nX = gray.cols / cell.cols;
-	int nY = gray.rows / cell.rows;
+void myharris(Mat & gray, int nX, int nY, float * ref_hist) {
 
 	Mat gx, gy;
 	Mat mag, angle;
@@ -28,61 +80,16 @@ int main(){
 	cv::Sobel(gray, gy, CV_32F, 0, 1, 1);
 	cartToPolar(gx, gy, mag, angle, true);
 
-	//draw rectangle  
-	cv::Rect rect;
-
-	rect.height = cell.cols;
-	rect.width = cell.rows;
-
-	int ref1 = 0;
-	int ref2 = 0;
-	int hog1 = 0;
-	int hog2 = 0;
 	int c = 0;
 	//遍历所有
-	for (int a = 0; ((a - 1)*nY) <= gray.rows; a++) {
-		for (int b = 0; ((b - 1)*nX) <= gray.cols; b++) {
-
-			//遍历其中一个cell
-			for (int j = (a*nY); j <= (a*nY + nY); j++) {
-				uchar* mag_row_ptr = mag.ptr <uchar>(j);// 第j行的头指针
-				uchar* angle_row_ptr = angle.ptr <uchar>(j);// 第j行的头指针
-				for (int i = (b*nX); i <= (b*nX + nX); i++) {
-					// 访问位于 x,y 处的像素
-					uchar* mag_ptr = &mag_row_ptr[i]; //  指向待访问的像素数据
-					uchar* angle_ptr = &angle_row_ptr[i]; //  指向待访问的像素数据
-
-					float data_mag = mag_ptr[0]; // data为I(x,y)第0个通道的值    	梯度
-					float data_angle = angle_ptr[0]; // data为I(x,y)第0个通道的值   角度
-					ref2 = ref1;
-					hog2 = hog1;
-					for (int i = 0; i <= 8; i++)
-					{
-						if (data_angle <= (i*scale))
-						{
-							int d = i + c;
-							ref_hist[d] = ref_hist[d] + data_mag;//遍历像素
-							ref1 = ref1+ref_hist[d];
-							//cout << "histgram" << ref_hist[d] << endl;
-						}
-					}							
+	for (int i = 0; i < nY; i++) {
+		for (int j = 0; j < nX; j++) {
+			for (int m = 0; m < 16; m++) {
+				for (int n = 0; n < 16; n++) {	
+					int k = (int)(angle.at<float>(i * 16 + m, j * 16 + n) / 45);//量化
+					ref_hist[(i*nX + j) * 8 + k] += mag.at<float>(i * 16 + m, j * 16 + n);//累加梯度
 				}
 			}
-			hog1 = ref1 - ref2;
-
-			if (hog1 <= hog2) {
-			rect.x = a;
-			rect.y = b;
-			}	
-			c = c + 8;
 		}
 	}
-
-
-
-	rectangle(src, rect, CV_RGB(255, 0, 0), 1, 8, 0);
-	imshow("src", src);
-	waitKey(0);//等待用户按键
-	return 0;
-
 }
