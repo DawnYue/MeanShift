@@ -12,10 +12,8 @@ void myharris(Mat & src, float * hist);
 int main()
 {
 	int bins = 1000000;
-	Mat src = imread("E:\\9\\hogTemplate.jpg");
-	Mat src1 = imread("E:\\9\\img1.jpg");
-	Mat src2 = imread("E:\\9\\img2.jpg");
-
+	Mat src = imread("E:\\13\\hogTemplate.png");
+	Mat src1 = imread("E:\\13\\img.png");
 
 	float * ref_hist = new float[bins];
 	memset(ref_hist, 0, sizeof(float)*bins);
@@ -28,7 +26,6 @@ int main()
 
 	myharris(src, ref_hist);
 	myharris(src1, ref_hist1);
-	myharris(src2, ref_hist2);
 
 
 	float sum1 = 0;
@@ -38,19 +35,6 @@ int main()
 	sum1 = sqrt(sum1);
 	cout << sum1 << endl;
 
-	float sum2 = 0;
-	for (int i = 0; i < bins; i++) {
-		sum2 += (ref_hist[i] - ref_hist2[i])*(ref_hist[i] - ref_hist2[i]);
-	}
-	sum2 = sqrt(sum2);
-	cout << sum2 << endl;
-
-	if (sum1 <= sum2) {
-		cout << "img1更与原图相似" << endl;
-	}
-	if (sum1 > sum2) {
-		cout << "img2更与原图相似" << endl;
-	}
 
 	delete[] ref_hist;
 	delete[] ref_hist1;
